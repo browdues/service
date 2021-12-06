@@ -1,22 +1,26 @@
 # Build the Go Binary.
 FROM golang:1.17 as build_sales-api
-
-# Note: This is due to Bill's past baggage. It guarantees nothing will bind to any c binaries.
-ENV CGO_ENABLED 0 
+ENV CGO_ENABLED 0
 ARG BUILD_REF
 
 # Copy the source code into the container.
 COPY . /service
 
-WORKDIR /service/app/service/sales-api
+# Build the service binary.
+WORKDIR /service/app/services/sales-api
 RUN go build -ldflags "-X main.build=${BUILD_REF}"
 
 # Run the Go Binary in Alpine.
 FROM alpine:3.15
 ARG BUILD_DATE
 ARG BUILD_REF
-COPY --from=build_sales-api /service/zarf/keys/. /service/zarf/keys/.
-COPY --from=build_sales-api /service/app/tooling/sales-admin/sales-admin /service/sales-admin
 COPY --from=build_sales-api /service/app/services/sales-api/sales-api /service/sales-api
 WORKDIR /service
 CMD ["./sales-api"]
+
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.title="sales-api" \
+      org.opencontainers.image.authors="William Kennedy <bill@ardanlabs.com>" \
+      org.opencontainers.image.source="https://github.com/ardanlabs/service/app/sales-api" \
+      org.opencontainers.image.revision="${BUILD_REF}" \
+      org.opencontainers.image.vendor="Ardan Labs"
