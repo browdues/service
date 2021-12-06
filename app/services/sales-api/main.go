@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 
 	"github.com/BrowduesMan85/service/foundation/logger"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -36,8 +38,18 @@ func run(log *zap.SugaredLogger) error {
 
 	// Set the correct number of threads for the service
 	// based on what is available either by the machine or quotas.
+	//
+	// (nbrowdues) Force go to respect the number of threads available in docker.
 	if _, err := maxprocs.Set(); err != nil {
 		return fmt.Errorf("maxprocs: %w", err)
 	}
 	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
+
+	// Make a channel to listen for an interrupt or terminate signal from the OS.
+	// Use a buffered channel because the signal package requires it.
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
+	<-shutdown
+
+	return nil
 }
