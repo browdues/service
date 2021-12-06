@@ -1,7 +1,11 @@
 SHELL := /bin/bash
 
 run:
-	go run app/service/sales-api/main.go
+	go run app/services/sales-api/main.go
+
+tidy:
+	go mod tidy
+	go mod vendor
 
 # ==============================================================================
 
@@ -25,6 +29,10 @@ KIND_CLUSTER := ardan-starter-cluster
 # For full Kind v0.11 release notes: https://github.com/kubernetes-sigs/kind/releases/tag/v0.11.0
 # Kind release used for our project: https://github.com/kubernetes-sigs/kind/releases/tag/v0.11.1
 # The image used below was copied by the above link and supports both amd64 and arm64.
+
+# Bringing up the cluster (from class)
+kind-class-bring-up-from-down:
+	kind-up kind-load kind-apply
 
 kind-up:
 	kind create cluster \

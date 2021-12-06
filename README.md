@@ -37,3 +37,27 @@ KNOWLEDGE NUG: The sole purpose of the go.sum file is to validate that you're us
 
 #
 
+## What is the purpose of your logs?
+
+You have to understand this or you won't make the right choice for the logger.
+
+Without logs, you're completely lost and blind.
+
+Here are a couple ideas for an answer:
+    1. Debugging: If your logs are just for debugging, you might be able to get away without structured logging. But if you're putting data into your logs, you will need to parse it out. Bill is not a fan of putting data in the logs. Instead, he strongly advocates metrics. Bill also doesn't believe in logging levels. Personally he has never been able to turn up logging levels fast enough to make any difference. He logs everything all the time in terms of information. Data regarding the service comes from metrics.
+
+
+You also need to figure out ***where*** you should be logging. 
+- You should NEVER hide loggers. 
+    THIS MEANS INJECTION TO EACH FUNCTION
+    THIS MEANS AVOIDING PASSING THE LOGGER VIA THE CONTEXT
+    YES, IT MAY BE CONVENIENT. DON'T DO IT!
+
+Bill recommends using uber's zap logger.
+
+Bill has created a package in the foundation layer called logger with a factory function called `New`. Its a convenience package because some of the logging configuration can be somewhat complex.
+
+IDIOMS
+- Bill wants to see ONE file in the package named after the package. If not, it tends to be a smell. Why? Because packages should **provide** not contain! This again lends itself to avoiding having a package that the entire code base is dependent upon. He compares this style of thinking to "flipping the pyramid upside down".
+- This repo is a bit overcommeted because this is training material. Comments shouldn't be used to describe what something is doing, but "why" something is occuring. Bill expects propper grammar.  When you are in a situation where there is a TON of commentary, in-line documentsation, etc, use the convention of a doc.go file in the package.
+- Configuration should happen one time, in main. This means no other package in the code base imports config apart from main!
